@@ -1,6 +1,6 @@
 import mysql.connector
 
-conn = mysql.connector.connect(host="localhost", user="root", password="p0r0dica", database="project")
+conn = mysql.connector.connect(host="localhost", user="root", password="p0r0dica", database="project",auth_plugin='mysql_native_password')
 cursor=conn.cursor()
 class User():
     def __init__(self,Nume,Prenume,Companie,IdManager):
@@ -15,4 +15,5 @@ class User():
 
 
 
-insert=User()
+ionut=User('ionut','bologa','Y',2)
+ionut.insert_user()
