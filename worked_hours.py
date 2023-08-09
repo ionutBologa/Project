@@ -1,19 +1,23 @@
-from flask import request
+import threading
 import time
-from connections import connect,app,send_email
+
+from connections import connect,app,send_email,cursor
 from datetime import datetime
 
 
 def worked_hours():
+
+    '''This function calculate the worked of hours of every employee,based on the check-in and check-out on different gates
+     and send an email whit the id's of thouse that not worked 8 hours a day and save in database the id,the date of unfulfilled
+      worked time and the time they worked'''
+
     mycursor = connect.cursor()
     mycursor.execute("SELECT * FROM check_times")
     mydata = mycursor.fetchall()
 
-    today=datetime.today().date()
-    check_in = []
-    check_out= []
+    check_in = {}
+    check_out = {}
     entry_worked_hours = {}
-    worked=""
 
     for entry in mydata:
         entry_id = entry[0]
@@ -21,56 +25,56 @@ def worked_hours():
         entry_way = entry[2].strip(";")
 
         date_time_obj = datetime.strptime(str(entry_date_time), "%Y-%m-%d %H:%M:%S")
-        entries = {
-            "id": entry_id,
-            "date_time": date_time_obj,
-            "way": entry_way
-        }
 
-        if entries["way"] == "in":
-            check_in.append(entries)
-        if entries["way"] == "out":
-            check_out.append(entries)
+        if entry_way == "in":
+            if entry_id not in check_in:
+                check_in[entry_id] = []
+            check_in[entry_id].append(date_time_obj)
+        elif entry_way == "out":
+            if entry_id not in check_out:
+                check_out[entry_id] = []
+            check_out[entry_id].append(date_time_obj)
 
-    # Process the data to calculate the worked hours for each entry_id
+    for entry_id, in_times in check_in.items():
+        if entry_id not in check_out:
+            continue
 
-    for entry in check_in:
-        entry_id = entry["id"]
-        date_time_obj = entry["date_time"]
+        out_times = check_out[entry_id]
 
-        if entry_id not in entry_worked_hours:
-            entry_worked_hours[entry_id] = {"in_time": date_time_obj, "out_time": None}
-        else:
-            entry_worked_hours[entry_id]["in_time"] = date_time_obj
+        total_worked_hours = 0.0
 
-    for entry in check_out:
-        entry_id = entry["id"]
-        date_time_obj = entry["date_time"]
+        for in_time in in_times:
+            for out_time in out_times:
+                if out_time > in_time:
+                    worked_hours = (out_time - in_time).total_seconds() / 3600
+                    if worked_hours < 28799 / 3600:
+                        total_worked_hours += worked_hours
 
-        if entry_id not in entry_worked_hours:
-            entry_worked_hours[entry_id] = {"in_time": None, "out_time": date_time_obj}
-        else:
-            entry_worked_hours[entry_id]["out_time"] = date_time_obj
+        entry_worked_hours[entry_id] = total_worked_hours
 
-    # Calculate  the worked hours for each entry_id
-    for entry_id, timestamps in entry_worked_hours.items():
-        time_in = timestamps["in_time"]
-        time_out = timestamps["out_time"]
+    return entry_worked_hours
+worked_hours_data = worked_hours()
+uncompleteHours= ""
 
-        if time_in and time_out:
-            worked_hours = (time_out - time_in).total_seconds() / 3600
-            if worked_hours < 28799/3600:
-                worked+=f"ID: {entry_id} on date :{today} worked {worked_hours} hours\n"
-                mycursor.execute(f"Insert into lessThen8Hours value('{entry_id}','{today}','{worked_hours}')")
-                connect.commit()
+for entry_id, total_worked_hours in worked_hours_data.items():
+    if total_worked_hours < 28799 / 3600:
+
+        uncompleteHours+=(f"ID: {entry_id} on date: {datetime.today().date()} worked {total_worked_hours} hours\n")
+
+        cursor.execute(f"Insert into under8hours value('{entry_id}','{datetime.today().date()}','{total_worked_hours}')")
+        connect.commit()
+
+if uncompleteHours!= "":
+    time.sleep(2)
     email="bologaionutviorel@gmail.com"
-    email1="bologa.raluca@gmail.com"
+    # email1="bologa.raluca@gmail.com"
     content=" Employees that worked  less then 8 hours today"
-    subject = ""+worked
+    subject =uncompleteHours
 
-
-    send_email((email,email1),content,subject)
-
-
+    send_email((email),content,subject)
+    print("email sent")
 
 worked_hours()
+
+
+

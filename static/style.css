@@ -1,0 +1,78 @@
+@import url('https//fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing : border-box;
+    font-family : 'Poppins' , sans-serif;
+}
+body
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-spacing: 0 10px;
+    min-height: 100vh;
+    flex-direction: column;
+    gap: 30px;
+    background: #36454F;
+}
+.inputBox
+{
+    position: relative;
+    width: 250px;
+    height: 70px;
+}
+.inputBox input
+{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #000000;
+    background: #36454F;
+    border-radius: 5px;
+    outline: none;
+    color: #FFFFFF;
+    font-size: 1em;
+    transition: 0.5s;
+}
+.inputBox span
+{
+    position: absolute;
+    left: 0;
+    padding: 10px;
+    pointer-events: none;
+    font-size: 1em;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    transition: 0.5s;
+}
+.inputBox input:valid ~ span,
+.inputBox input:focus ~ span
+{
+    color: #00dfc4;
+    transform: translateX(10px) translateY(-7px);
+    font-size: 0.65em;
+    padding: 0 20px;
+    background: #36454F;
+    border-left: 1px solid #00dfc4;
+    border-right: 1px solid #00dfc4;
+    letter-spacing: 0.2em;
+}
+.inputBox input:valid,
+.inputBox input:focus
+{
+    border: 1px solid #00dfc4;
+}
+.inputBoxRegister input
+{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #000000;
+    background: #000010;
+    border-radius: 5px;
+    outline: none;
+    color: #00dfc4;
+    font-size: 1em;
+    transition: 0.5s;
+}
+

@@ -1,47 +1,37 @@
+import threading
 from connections import cursor,connect
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, render_template
 
-app=Flask(__name__)
-class User():
-    def __init__(self,Nume,Prenume,Companie,IdManager):
-        self.Nume=Nume
-        self.Prenume=Prenume
-        self.Companie=Companie
-        self.IdManager=IdManager
-
-    def insert_user(self):
-        cursor.execute(f"INSERT INTO USERS VALUES (null,'{self.Nume}','{self.Prenume}','{self.Companie}','{self.IdManager}');")
-        connect.commit()
+'''This file contain the endpoint and the html interface for adding users from browser '''
 
 
-@app.route('/register_user', methods=['POST'])
+app=Flask(__name__,static_folder='/Users/bologaionut/PycharmProjects/Final_Project/static')
+
+@app.route('/register', methods=['POST'])
 def insert_users():
     try:
-        data = request.get_json()
-        nume = data['Nume']
-        prenume = data['Prenume']
-        companie = data['Companie']
-        id_manager = data['IdManager']
+        nume = request.form['nume']
+        prenume = request.form['prenume']
+        companie = request.form['companie']
+        id_manager = request.form['idManager']
 
-        query = "INSERT INTO persoane (Nume, Prenume, Companie, IdManager) VALUES (?, ?, ?, ?);"
-        values = (nume, prenume, companie, id_manager)
-
-        cursor.execute(query, values)
+        cursor.execute(f"INSERT INTO USERS VALUES (null,'{nume}','{prenume}','{companie}','{id_manager}');")
         connect.commit()
 
-        return "Persoana inserata cu succes! ID: " + str(cursor.lastrowid), 201
+        return "Persoana inserata cu succes!", 201
 
     except KeyError as e:
-        return "Date incomplete sau incorecte", 400
+        return f"Date incomplete sau incorecte{e}", 400
     except Exception as e:
         print("Eroare la inserarea persoanei:", e)
         return "Eroare la inserarea persoanei", 500
 
-@app.route('/register', methods=['GET'])
+
+@app.route('/', methods=['GET'])
 def serve_register_page():
-    return render_template('html/register.html')
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
 
-
+t2=threading.Thread(app.run())

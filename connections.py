@@ -4,10 +4,13 @@ from flask import Flask, request
 import mysql.connector
 from email.message import EmailMessage
 
+'''This file contain the data base connection and the script so the app cand send email'''
+
+
 connect=mysql.connector.connect(
         host="localhost",
         user="root",
-        password="p0r0dica",
+        password='p0r0dica',
         database="project",
         auth_plugin='mysql_native_password'
     )
@@ -16,8 +19,8 @@ app= Flask(__name__)
 
 def send_email(to, subject, message):
 
-    email_address = "bologa.ionut13@gmail.com"
-    email_password = "ozotlvccastoqrhb"
+    email_address = 'bologa.ionut13@gmail.com'
+    email_password = 'ozotlvccastoqrhb'
 
     # create email
     msg = EmailMessage()
